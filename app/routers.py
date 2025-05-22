@@ -19,9 +19,9 @@ router = APIRouter(
 ###################################
 
 #Default function, change as needed
-@router.get("")
-async def root_func():
-    return {"message": "Root function ran!"}
+# @router.get("")
+# async def root_func():
+#     return {"message": "Root function ran!"}
     
 #Function for product creation based on a json DTO
 #Input: ProductCreateDTO, auth token
