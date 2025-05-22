@@ -18,12 +18,13 @@ class AuthToken(BaseModel):
     class Config:
         extra = "allow"
 
-class UserCreateDTO(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
+class ProductCreateDTO(BaseModel):
+    name : str
+    price : float
+    unit : str
 
-class UserReadDTO(BaseModel):
-    id: int
-    username: str
-    email: EmailStr
+class ProductReadDTO(BaseModel):
+    id : int
+    name : str
+    price : float
+    unit : str

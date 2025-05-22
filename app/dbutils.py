@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from typing import List
 from models import *
 from schemas import *
 import hashlib
@@ -8,53 +9,59 @@ PASS_SALT=os.getenv("PASS_SALT")
 if PASS_SALT is None:
     raise ValueError("Environment variable PASS_SALT is not set.")
 
-#Function to get all users by their email
-#Input: Email string
-#Output: A user DTO
-def get_user_by_email(db: Session, email: str) -> UserReadDTO:
-    user = db.query(User).filter(User.email == email).first()
-    if user:
-        return UserReadDTO(id=user.id, username=user.username, email=user.email)
+#Function to get a product by its id
+#Input: ID int
+#Output: A product DTO
+def get_product_by_id(db: Session, id: str) -> ProductReadDTO:
+    product = db.query(Product).filter(Product.id == id).first()
+    if product:
+        return ProductReadDTO(id=product.id, name=product.name, price=product.price, unit=product.unit)
     return None
 
-#Function to get all users by their username
-#Input: USername string
-#Output: A user DTO
-def get_user_by_username(db: Session, username: str) -> UserReadDTO:
-    user = db.query(User).filter(User.username == username).first()
-    if user:
-        return UserReadDTO(id=user.id, username=user.username, email=user.email)
-    return None
+#Function to get all products
+#Input: db
+#Output: A list of ProductReadDTO
+def get_all_products(db: Session) -> List[ProductReadDTO]:
+    products = db.query(Product).all()
+    return [
+        ProductReadDTO(
+            id=product.id,
+            name=product.name,
+            price=product.price,
+            unit=product.unit
+        )
+        for product in products
+    ]
 
-#Function to hash a password using hash 256 (no extra safety as argon2)
-#Input: password string
-#Output: hashed password string
-def pass_hasher(password : str) -> str:
-    hasher = hashlib.sha256()
-    hasher.update((password + PASS_SALT).encode('utf-8'))
-    return hasher.hexdigest()
-
-#Function to create a generic user by DTOs
-#Input: UserCreateDTO
-#Output: UserReadDTO
-def create_user(db: Session, userDTO: UserCreateDTO) -> UserReadDTO:
-    #Hash password
-    hashed_password = pass_hasher(userDTO.password)
-
-    #Add password to db
-    password = Password(password256=hashed_password)
-    db.add(password)
+#Function to delete a product by its id
+#Input: ID int
+#Output: A product DTO of the deleted product
+def delete_product_by_id(db: Session, id: str) -> ProductReadDTO:
+    product = db.query(Product).filter(Product.id == id).first()
+    
+    if product is None:
+        return None
+    db.delete(product)
     db.commit()
-    db.refresh(password)
 
-    #Add user to db
-    user = User(
-        username=userDTO.username,
-        email=userDTO.email,
-        id_password=password.id
+    return ProductReadDTO(
+        id=product.id,
+        name=product.name,
+        price=product.price,
+        unit=product.unit
     )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
 
-    return UserReadDTO(id=user.id, username=user.username, email=user.email)
+#Function to create a product by DTOs
+#Input: ProductCreateDTO
+#Output: ProductReadDTO
+def create_product(db: Session, productDTO: ProductCreateDTO) -> ProductReadDTO:
+    product = Product(
+        name=productDTO.name,
+        price=productDTO.price,
+        unit=productDTO.unit
+    )
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+
+    return ProductReadDTO(id=product.id, name=product.name, price=product.price, unit=product.unit)
