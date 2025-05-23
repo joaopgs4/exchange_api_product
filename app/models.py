@@ -17,6 +17,6 @@ class Product(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(60), nullable=False, unique=True)
-    price = Column(Float(8), nullable=False, unique=True)
-    unit = Column(String(12), nullable=False, unique=True)
+    price = Column(Float(8), nullable=False)
+    unit = Column(String(12), nullable=False)
 
